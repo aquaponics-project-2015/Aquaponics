@@ -1,21 +1,25 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <NewPing.h>
+#include <Timer.h>
 
-#define TRIGGER_PIN_1  	  12  // Arduino pin tied to trigger pin on the ultrasonic sensor.
-#define TRIGGER_PIN_2  	  13  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define TRIGGER_PIN_1     12  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define TRIGGER_PIN_2     13  // Arduino pin tied to trigger pin on the ultrasonic sensor.
 
-#define ECHO_PIN_1     	  10  // Arduino pin tied to echo pin on the ultrasonic sensor.
-#define ECHO_PIN_2     	  11  // Arduino pin tied to echo pin on the ultrasonic sensor.
+#define ECHO_PIN_1        10  // Arduino pin tied to echo pin on the ultrasonic sensor.
+#define ECHO_PIN_2        11  // Arduino pin tied to echo pin on the ultrasonic sensor.
 
-#define MAX_DISTANCE 	  200 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
+#define MAX_DISTANCE    200 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 
-#define SENSOR_PIN	  2
+#define SENSOR_PIN    2
 
 #define SensorPin         A0            //pH meter Analog output to Arduino Analog Input 0
 #define Offset            0.00            //deviation compensate
 #define samplingInterval  20
 #define ArrayLenth        40    //times of collection
+
+int pumpPin = 8;                //Pin for the positive end of the pump relay
+Timer t;
 
 /*
 https://www.pjrc.com/teensy/td_libs_OneWire.html
@@ -26,58 +30,50 @@ https://code.google.com/p/arduino-new-ping/
 OneWire oneWire(SENSOR_PIN);
 DallasTemperature sensor(&oneWire);
 NewPing sonar1(TRIGGER_PIN_1, ECHO_PIN_1, MAX_DISTANCE);
-NewPing sonar2(TRIGGER_PIN_2, ECHO_PIN_2, MAX_DISTANCE);
+// NewPing sonar2(TRIGGER_PIN_2, ECHO_PIN_2, MAX_DISTANCE);
 int pHArray[ArrayLenth];   //Store the average value of the sensor feedback
 int pHArrayIndex=0;
+float initialWaterLevel = 10;
+bool pumpState;
 
-void setup()
-{
-	sensor.begin();	
-	Serial.begin(9600);
+void setup(){
+  sensor.begin(); 
+  Serial.begin(9600);
+  pumpState = FALSE;
+  t.every(5000,getReadings); //Update rate for the server
+  initialWaterLevel = getWaterLevel();
 }
 
-void loop()
-{
-  float avgWaterlevel = getWaterLevel();
-  float phVal = getpH();
-  float avgTemp = getTemp();
-  
-  Serial.print(avgWaterlevel);
-  Serial.print(",");
-  Serial.print(phVal);
-  Serial.print(",");
-  Serial.print(avgTemp);
-  Serial.print(",");
-  if(isPump())
-    Serial.print("On");  
-  else
-    Serial.print("Off");  
+void loop(){
+  t.update();
+  checkWater();
 
-  delay(1000);
 }
 
-float getWaterLevel()
-{
+float getWaterLevel(){
   unsigned int uS_1 = sonar1.ping();
-  unsigned int uS_2 = sonar2.ping();
-  float left_water_level = uS_1 / US_ROUNDTRIP_CM;
-  float right_water_level = uS_2 / US_ROUNDTRIP_CM;
-  float avgWaterLevel = (left_water_level + right_water_level) / 2;
+  // unsigned int uS_2 = sonar2.ping();
+  int left_water_level = uS_1 / US_ROUNDTRIP_CM;
+
   
-  if(abs(left_water_level - avgWaterLevel) > 10
-    || abs(right_water_level - avgWaterLevel) > 10)
-  {
-    //smn wrong
-  }
-  return avgWaterLevel;
+  float wata = 30-(left_water_level);
+  // float right_water_level = uS_2 / US_ROUNDTRIP_CM;
+  // float avgWaterLevel = (left_water_level + right_water_level) / 2;
+  
+  // if(abs(left_water_level - avgWaterLevel) > 10
+  //   || abs(right_water_level - avgWaterLevel) > 10)
+  // {
+  //   //smn wrong
+  // }
+  // return avgWaterLevel;
+  return wata; //Only one sensor  
 }
 
-float getTemp()
-{
+float getTemp(){
   float currentTemp1, currentTemp2;
   sensor.requestTemperatures();
   currentTemp1 = sensor.getTempCByIndex(0);
-  currentTemp2 = sensor.getTempCByIndex(1);
+  // currentTemp2 = sensor.getTempCByIndex(1);
 
   float avgTemp = (currentTemp1 + currentTemp1) / 2;
   
@@ -86,33 +82,78 @@ float getTemp()
   {
     //smn wrong
   }
-  return avgTemp;
+  // return avgTemp;
+  return currentTemp1;
 }
 
-float getpH()
-{
+float getpH(){
   static unsigned long samplingTime = millis();
   static unsigned long printTime = millis();
   static float pHValue,voltage;
   if(millis()-samplingTime > samplingInterval)
   {
-      pHArray[pHArrayIndex++]=analogRead(SensorPin);
-      if(pHArrayIndex==ArrayLenth)pHArrayIndex=0;
-      voltage = avergearray(pHArray, ArrayLenth)*5.0/1024;
-      pHValue = 3.5*voltage+Offset;
-      samplingTime=millis();
+    pHArray[pHArrayIndex++]=analogRead(SensorPin);
+    if(pHArrayIndex==ArrayLenth)pHArrayIndex=0;
+    voltage = avergearray(pHArray, ArrayLenth)*5.0/1024;
+    pHValue = 3.5*voltage+Offset;
+    samplingTime=millis();
   }
   //if(millis() - printTime > printInterval)   //Every 800 milliseconds, print a numerical, convert the state of the LED indicator
   //{
-	//Serial.print("Voltage:");
+  //Serial.print("Voltage:");
        // Serial.print(voltage,2);
         //Serial.print("    pH value: ");
-	//Serial.println(pHValue);
+  //Serial.println(pHValue);
   return pHValue;
         //digitalWrite(LED,digitalRead(LED)^1);
         //printTime=millis();
   //}
 }
+
+void getReadings(){
+  float avgWaterlevel = getWaterLevel();
+  float phVal = getpH();
+  float avgTemp = getTemp();
+  
+  Serial.print("1");
+  Serial.print(",");
+  Serial.print(avgWaterlevel);
+  Serial.print(",");
+  Serial.print(phVal);
+  Serial.print(",");
+  Serial.print(avgTemp);
+  Serial.print(",");
+  Serial.print(pumpState);
+  Serial.print("\n");
+}
+
+void getPumpReading(){
+  Serial.print("2");
+  Serial.print(",");
+  if(pumpState){
+    Serial.print("On");
+  }else{
+    Serial.print("Off");
+  }
+  Serial.print("\n");
+}
+
+void checkWater(){
+  float waterLevel = getWaterLevel();
+  float upperLimit = initialWaterLevel;
+  float lowerLimit = initialWaterLevel-1;
+  if(waterLevel>upperLimit && !pumpState){
+       analogWrite(pumpPin, HIGH);
+       pumpState = TRUE;
+       
+  }
+  if(waterLevel<lowerLimit && pumpState){
+      analogWrite(pumpPin, LOW);
+      pumpState = FALSE;
+      
+  }
+}
+
 double avergearray(int* arr, int number){
   int i;
   int max,min;
@@ -152,3 +193,7 @@ double avergearray(int* arr, int number){
   }//if
   return avg;
 }
+
+
+  
+
