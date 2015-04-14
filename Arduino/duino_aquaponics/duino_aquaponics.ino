@@ -18,7 +18,7 @@
 #define samplingInterval  20
 #define ArrayLenth        40    //times of collection
 
-int pumpPin = 8;                //Pin for the positive end of the pump relay
+#define pumpPin           8               //Pin for the positive end of the pump relay
 Timer t;
 
 /*
