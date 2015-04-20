@@ -20,7 +20,7 @@
 
 #define pumpPin           8               //Pin for the positive end of the pump relay
 Timer t;
-int waterSampleRate = 200;
+int waterSampleRate = 50;
 
 /*
 https://www.pjrc.com/teensy/td_libs_OneWire.html
@@ -41,7 +41,7 @@ void setup(){
   sensor.begin(); 
   Serial.begin(9600);
   pumpState = FALSE;
-  t.every(5000,getReadings); //Update rate for the server
+  t.every(500,getReadings); //Update rate for the server
   initialWaterLevel = getWaterLevel();
 }
 
@@ -52,13 +52,14 @@ void loop(){
 }
 
 float getWaterLevel(){
-  float readings[waterSampleRate];
-  float sum = 0;
+  unsigned int readings[waterSampleRate];
+  int sum = 0;
         
 
   for (int i = 0; i < waterSampleRate; ++i){
-    float uS_1 = sonar1.ping();
+    unsigned int uS_1 = sonar1.ping();
     readings[i] = uS_1 / US_ROUNDTRIP_CM;
+    delay(50);
   }
 
   for (int i = 0; i < waterSampleRate; ++i){
@@ -67,14 +68,14 @@ float getWaterLevel(){
   }
 
   float wata = sum/waterSampleRate;
-  return wata; //Only one sensor  
+  return 30 - wata; //Only one sensor  
 }
 
 float getTemp(){
   float currentTemp1, currentTemp2;
   sensor.requestTemperatures();
   currentTemp1 = sensor.getTempCByIndex(0);
-  // currentTemp2 = sensor.getTempCByIndex(1);
+  currentTemp2 = sensor.getTempCByIndex(1);
 
   float avgTemp = (currentTemp1 + currentTemp1) / 2;
   
@@ -83,8 +84,8 @@ float getTemp(){
   {
     //smn wrong
   }
-  // return avgTemp;
-  return currentTemp1;
+   return avgTemp;
+  //return currentTemp1;
 }
 
 float getpH(){
