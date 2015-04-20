@@ -13,13 +13,14 @@
 
 #define SENSOR_PIN    2
 
-#define SensorPin         A0            //pH meter Analog output to Arduino Analog Input 0
+#define SensorPin         A0             //pH meter Analog output to Arduino Analog Input 0
 #define Offset            0.00            //deviation compensate
 #define samplingInterval  20
 #define ArrayLenth        40    //times of collection
 
 #define pumpPin           8               //Pin for the positive end of the pump relay
 Timer t;
+int waterSampleRate = 200;
 
 /*
 https://www.pjrc.com/teensy/td_libs_OneWire.html
@@ -51,21 +52,21 @@ void loop(){
 }
 
 float getWaterLevel(){
-  unsigned int uS_1 = sonar1.ping();
-  // unsigned int uS_2 = sonar2.ping();
-  int left_water_level = uS_1 / US_ROUNDTRIP_CM;
+  float readings[waterSampleRate];
+  float sum = 0;
+        
 
-  
-  float wata = 30-(left_water_level);
-  // float right_water_level = uS_2 / US_ROUNDTRIP_CM;
-  // float avgWaterLevel = (left_water_level + right_water_level) / 2;
-  
-  // if(abs(left_water_level - avgWaterLevel) > 10
-  //   || abs(right_water_level - avgWaterLevel) > 10)
-  // {
-  //   //smn wrong
-  // }
-  // return avgWaterLevel;
+  for (int i = 0; i < waterSampleRate; ++i){
+    float uS_1 = sonar1.ping();
+    readings[i] = uS_1 / US_ROUNDTRIP_CM;
+  }
+
+  for (int i = 0; i < waterSampleRate; ++i){
+    sum= sum + readings[1];
+
+  }
+
+  float wata = sum/waterSampleRate;
   return wata; //Only one sensor  
 }
 
@@ -143,12 +144,12 @@ void checkWater(){
   float upperLimit = initialWaterLevel;
   float lowerLimit = initialWaterLevel-1;
   if(waterLevel>upperLimit && !pumpState){
-       analogWrite(pumpPin, HIGH);
+       digitalWrite(pumpPin, HIGH);
        pumpState = TRUE;
        
   }
   if(waterLevel<lowerLimit && pumpState){
-      analogWrite(pumpPin, LOW);
+      digitalWrite(pumpPin, LOW);
       pumpState = FALSE;
       
   }
