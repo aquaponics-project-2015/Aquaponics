@@ -40,6 +40,9 @@ bool pumpState;
 void setup(){
   sensor.begin(); 
   Serial.begin(9600);
+  pinMode(pumpPin, OUTPUT);
+  pinMode(7, OUTPUT);
+  pinMode(6, OUTPUT);
   pumpState = FALSE;
   t.every(500,getReadings); //Update rate for the server
   initialWaterLevel = getWaterLevel();
@@ -144,13 +147,17 @@ void checkWater(){
   float waterLevel = getWaterLevel();
   float upperLimit = initialWaterLevel;
   float lowerLimit = initialWaterLevel-1;
-  if(waterLevel>upperLimit && !pumpState){
+  if(waterLevel>=upperLimit && !pumpState){
        digitalWrite(pumpPin, HIGH);
+       digitalWrite(7, HIGH);
+       digitalWrite(6, LOW);
        pumpState = TRUE;
        
   }
   if(waterLevel<lowerLimit && pumpState){
       digitalWrite(pumpPin, LOW);
+      digitalWrite(7, LOW);
+      digitalWrite(6, HIGH);
       pumpState = FALSE;
       
   }
