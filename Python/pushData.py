@@ -1,10 +1,13 @@
-import serial
 import sys
-import requests
 import datetime
 import time
 import json
-
+import requests
+#Can be Downloaded from this Link
+#https://pypi.python.org/pypi/pyserial
+import serial
+#Can be Downloaded from this Link
+#http://docs.python-requests.org/en/latest/
 baseURL = "http://54.152.138.146:9000"
 ser = serial.Serial('COM5', 9600, timeout = 0)
 time.sleep(2)
