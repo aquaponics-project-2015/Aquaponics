@@ -3,15 +3,15 @@
 #include <NewPing.h>
 #include <Timer.h>
 
-#define TRIGGER_PIN_1     12  // Arduino pin tied to trigger pin on the ultrasonic sensor.
-#define TRIGGER_PIN_2     13  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define TRIGGER_PIN_1     11  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+
 
 #define ECHO_PIN_1        10  // Arduino pin tied to echo pin on the ultrasonic sensor.
-#define ECHO_PIN_2        11  // Arduino pin tied to echo pin on the ultrasonic sensor.
+
 
 #define MAX_DISTANCE    200 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 
-#define SENSOR_PIN    2
+#define SENSOR_PIN    12
 
 #define SensorPin         A0             //pH meter Analog output to Arduino Analog Input 0
 #define Offset            0.00            //deviation compensate
@@ -31,7 +31,6 @@ https://code.google.com/p/arduino-new-ping/
 OneWire oneWire(SENSOR_PIN);
 DallasTemperature sensor(&oneWire);
 NewPing sonar1(TRIGGER_PIN_1, ECHO_PIN_1, MAX_DISTANCE);
-// NewPing sonar2(TRIGGER_PIN_2, ECHO_PIN_2, MAX_DISTANCE);
 int pHArray[ArrayLenth];   //Store the average value of the sensor feedback
 int pHArrayIndex=0;
 float initialWaterLevel = 10;
