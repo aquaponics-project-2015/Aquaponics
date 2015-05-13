@@ -8,7 +8,7 @@ ser = 0
 
 #Function to Initialize the Serial Port
 def init_serial():
-    COMNUM = 1          #Enter Your COM Port Number Here.
+    COMNUM = 3          #Enter Your COM Port Number Here.
     global ser          #Must be declared in Each Function
     ser = serial.Serial()
     ser.baudrate = 9600

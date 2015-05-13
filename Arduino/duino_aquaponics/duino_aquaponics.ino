@@ -43,7 +43,7 @@ void setup(){
   pinMode(7, OUTPUT);
   pinMode(6, OUTPUT);
   pumpState = FALSE;
-  t.every(500,getReadings); //Update rate for the server
+  t.every(50,getReadings); //Update rate for the server
   initialWaterLevel = getWaterLevel();
 }
 

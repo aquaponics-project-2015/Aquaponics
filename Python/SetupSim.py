@@ -3,46 +3,40 @@ import datetime
 import time
 import json
 import requests
+from random import randint
+
 #Can be Downloaded from this Link
 #https://pypi.python.org/pypi/pyserial
-import serial
+
 #Can be Downloaded from this Link
 #http://docs.python-requests.org/en/latest/
 baseURL = "http://54.152.138.146:9000"
-ser = serial.Serial('COM3', 9600, timeout = 0) #You may have to change the port depending on your computer
-time.sleep(2)
+
 
 def main():
     while True:
-        print "got no values"
-        while(ser.inWaiting() == 0):
-            print "got no values"
-            pass
-        val = getValue()
-        print val
-        valuesArray = val.split(',')
-        if int(valuesArray[0])==1 :
-            water = float(valuesArray[1])
-            ph = float(valuesArray[2])
-            temp = float(valuesArray[3])
-            postEnvToServer(water,ph,temp)
-        if int(valuesArray[0])==2:
-            state = valuesArray[1]
-            if state =='On':
-                postPumpToServer(True)
-            else:
-                postPumpToServer(False)
+        postEnvToServer(randomTemp(),randompH(),randomWaterlevel)
+        time.sleep(120)
         
-def getValue():
-    val = ''
-    this = True
-    while this:
-        byte = ser.read()
-        if byte == '\r' or byte=='\n':
-            this = False
-        if (byte != '\r') and (byte != '\n'):
-            val+=(byte)
-    return val
+
+
+def randomTemp():
+    baseTemp = 24
+    numberSeed = randint(1,50)
+    variance = numberSeed*0.1
+    return baseTemp+variance
+
+def randompH():
+    base = 6
+    numberSeed = randint(1,20)
+    variance = numberSeed*0.1
+    return base+variance
+
+def randomWaterlevel():
+    base = 20
+    numberSeed = randint(0,5)
+    
+    return base+numberSeed
 
 def postEnvToServer(temp ,ph ,waterlevel):
     endpointURL = baseURL+"/system/newSystem"
