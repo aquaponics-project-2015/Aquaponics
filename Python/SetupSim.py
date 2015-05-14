@@ -15,7 +15,10 @@ baseURL = "http://54.152.138.146:9000"
 
 def main():
     while True:
-        postEnvToServer(randomTemp(),randompH(),randomWaterlevel)
+        temp = randomTemp()
+        pH = randompH()
+        water = randomWaterlevel()
+        postEnvToServer(temp,pH,water)
         time.sleep(120)
         
 

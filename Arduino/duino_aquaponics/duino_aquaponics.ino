@@ -18,7 +18,9 @@
 #define samplingInterval  20
 #define ArrayLenth        40    //times of collection
 
-#define pumpPin           8               //Pin for the positive end of the pump relay
+#define pumpPin           13              //Pin for the positive end of the pump relay
+#define pumpLED   7                 //Optional 
+#define waterAmount   17                //Optional 
 Timer t;
 int waterSampleRate = 50;
 
@@ -38,13 +40,13 @@ bool pumpState;
 
 void setup(){
   sensor.begin(); 
-  Serial.begin(9600);
+  Serial.begin(9600); 
   pinMode(pumpPin, OUTPUT);
   pinMode(7, OUTPUT);
   pinMode(6, OUTPUT);
   pumpState = FALSE;
-  t.every(50,getReadings); //Update rate for the server
-  initialWaterLevel = getWaterLevel();
+  t.every(60000,getReadings); //Update rate for the server
+  initialWaterLevel = waterAmount;
 }
 
 void loop(){
@@ -52,6 +54,8 @@ void loop(){
   checkWater();
 
 }
+
+
 
 float getWaterLevel(){
   unsigned int readings[waterSampleRate];
@@ -71,6 +75,27 @@ float getWaterLevel(){
 
   float wata = sum/waterSampleRate;
   return 30 - wata; //Only one sensor  
+}
+
+float getWaterLevelAccurate(){
+  unsigned int readings[waterSampleRate];
+  int sum = 0;
+        
+
+  for (int i = 0; i < waterSampleRate; ++i){
+    unsigned int uS_1 = sonar1.ping();
+    readings[i] = uS_1 / US_ROUNDTRIP_CM;
+    delay(50);
+  }
+
+  for (int i = 0; i < waterSampleRate; ++i){
+    sum= sum + readings[1];
+
+  }
+
+  float wata = sum/waterSampleRate;
+  float accuratewaterlevel = 30 - wata;
+  return accuratewaterlevel; //Only one sensor  
 }
 
 float getTemp(){
@@ -128,6 +153,7 @@ void getReadings(){
   Serial.print(avgTemp);
   Serial.print(",");
   Serial.print(pumpState);
+  Serial.print(",");
   Serial.print("\n");
 }
 
@@ -139,6 +165,7 @@ void getPumpReading(){
   }else{
     Serial.print("Off");
   }
+  Serial.print(",");
   Serial.print("\n");
 }
 
@@ -146,19 +173,38 @@ void checkWater(){
   float waterLevel = getWaterLevel();
   float upperLimit = initialWaterLevel;
   float lowerLimit = initialWaterLevel-1;
-  if(waterLevel>=upperLimit && !pumpState){
-       digitalWrite(pumpPin, HIGH);
-       digitalWrite(7, HIGH);
-       digitalWrite(6, LOW);
-       pumpState = TRUE;
-       
+  if(waterLevel>=upperLimit){
+       turnOnPump(TRUE);
   }
-  if(waterLevel<lowerLimit && pumpState){
-      digitalWrite(pumpPin, LOW);
-      digitalWrite(7, LOW);
-      digitalWrite(6, HIGH);
-      pumpState = FALSE;
-      
+  if(waterLevel<lowerLimit){
+     turnOnPump(FALSE); 
+  }
+  float phVal = getpH();
+  float avgTemp = getTemp();
+  Serial.print("3");
+  Serial.print(",");
+  Serial.print(waterLevel);
+  Serial.print(",");
+  Serial.print(phVal);
+  Serial.print(",");
+  Serial.print(avgTemp);
+  Serial.print(",");
+  Serial.print(pumpState);
+  Serial.print(",");
+  Serial.print("\n");
+}
+
+void turnOnPump(boolean pumpAction){
+  if(pumpAction){
+    digitalWrite(pumpPin, HIGH);
+    digitalWrite(7, HIGH);
+    pumpState = TRUE;
+    getPumpReading();
+  }else{
+    digitalWrite(pumpPin, LOW);
+    digitalWrite(7, LOW);
+    pumpState = FALSE;
+    getPumpReading();
   }
 }
 
@@ -204,4 +250,5 @@ double avergearray(int* arr, int number){
 
 
   
+
 
