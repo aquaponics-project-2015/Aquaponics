@@ -43,7 +43,7 @@ def randomWaterlevel():
 
 def postEnvToServer(temp ,ph ,waterlevel):
     endpointURL = baseURL+"/system/newSystem"
-    theTime = time.time()
+    theTime = time.time() *1000
     print theTime
     payload = {"waterLevel":waterlevel,"ph":ph,"temperature":temp,"datetime":theTime}
     headers = {'Content-Type': 'application/json'}
@@ -55,7 +55,7 @@ def postEnvToServer(temp ,ph ,waterlevel):
 
 def postPumpToServer(status):
     endpointURL = baseURL+"/pump/newPump"
-    theTime = time.time()
+    theTime = time.time() *1000
     payload = {"status":status, "datetime":theTime}
     headers = {'Content-Type': 'application/json'}
     r = requests.post(endpointURL, headers=headers, data = json.dumps(payload))

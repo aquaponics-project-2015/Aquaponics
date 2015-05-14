@@ -69,7 +69,7 @@ float getWaterLevel(){
   }
 
   for (int i = 0; i < waterSampleRate; ++i){
-    sum= sum + readings[1];
+    sum= sum + readings[i];
 
   }
 
@@ -78,22 +78,25 @@ float getWaterLevel(){
 }
 
 float getWaterLevelAccurate(){
-  unsigned int readings[waterSampleRate];
-  int sum = 0;
+  float readings[waterSampleRate];
+  float sum = 0;
         
 
   for (int i = 0; i < waterSampleRate; ++i){
     unsigned int uS_1 = sonar1.ping();
-    readings[i] = uS_1 / US_ROUNDTRIP_CM;
+    readings[i] = (float) uS_1 / US_ROUNDTRIP_CM;
+    
     delay(50);
   }
 
   for (int i = 0; i < waterSampleRate; ++i){
-    sum= sum + readings[1];
+    sum= sum + readings[i];
 
   }
+ 
 
-  float wata = sum/waterSampleRate;
+  float wata = (float) sum/(waterSampleRate);
+  
   float accuratewaterlevel = 30 - wata;
   return accuratewaterlevel; //Only one sensor  
 }
@@ -140,7 +143,7 @@ float getpH(){
 }
 
 void getReadings(){
-  float avgWaterlevel = getWaterLevel();
+  float avgWaterlevel = getWaterLevelAccurate();
   float phVal = getpH();
   float avgTemp = getTemp();
   
