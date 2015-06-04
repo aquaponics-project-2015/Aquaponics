@@ -176,10 +176,10 @@ void checkWater(){
   float waterLevel = getWaterLevel();
   float upperLimit = initialWaterLevel;
   float lowerLimit = initialWaterLevel-1;
-  if(waterLevel>=upperLimit){
+  if(waterLevel>=upperLimit && !pumpState){
        turnOnPump(TRUE);
   }
-  if(waterLevel<lowerLimit){
+  if(waterLevel<lowerLimit && pumpState ){
      turnOnPump(FALSE); 
   }
   float phVal = getpH();
