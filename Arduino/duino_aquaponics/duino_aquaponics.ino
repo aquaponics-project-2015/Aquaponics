@@ -45,7 +45,7 @@ void setup(){
   pinMode(7, OUTPUT);
   pinMode(6, OUTPUT);
   pumpState = FALSE;
-  t.every(1800000,getReadings); //Update rate for the server
+  t.every(60000,getReadings); //Update rate for the server
   initialWaterLevel = waterAmount;
 }
 
@@ -177,7 +177,6 @@ void checkWater(){
   float upperLimit = initialWaterLevel;
   float lowerLimit = initialWaterLevel-1;
   if(waterLevel>=upperLimit && !pumpState){
-      
        turnOnPump(TRUE);
   }
   if(waterLevel<lowerLimit && pumpState ){
