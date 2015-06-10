@@ -20,7 +20,8 @@
 
 #define pumpPin           13              //Pin for the positive end of the pump relay
 #define pumpLED   7                 //Optional 
-#define waterAmount   17                //Optional 
+#define waterAmount   16                //Optional 
+#define waterInPlants   0.7                //Optional 
 Timer t;
 int waterSampleRate = 50;
 
@@ -173,11 +174,15 @@ void getPumpReading(){
 }
 
 void checkWater(){
-  float waterLevel = getWaterLevel();
+  float waterLevel = getWaterLevelAccurate();
   float upperLimit = initialWaterLevel;
-  float lowerLimit = initialWaterLevel-1;
+  float lowerLimit = initialWaterLevel-waterInPlants;
   if(waterLevel>=upperLimit && !pumpState){
+      float waterLevel2 = getWaterLevelAccurate();
+      if(waterLevel>=upperLimit){
        turnOnPump(TRUE);
+      }
+
   }
   if(waterLevel<lowerLimit && pumpState ){
      turnOnPump(FALSE); 
@@ -253,5 +258,6 @@ double avergearray(int* arr, int number){
 
 
   
+
 
 
