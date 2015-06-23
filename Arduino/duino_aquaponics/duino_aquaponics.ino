@@ -22,8 +22,18 @@
 #define pumpLED   7                 //Optional 
 #define waterAmount   16                //Optional 
 #define waterInPlants   0.7                //Optional 
+#define dryPeriodLed  8
+#define DRY_PERIOD 900000
+
 Timer t;
 int waterSampleRate = 50;
+
+//Try period testing code
+int pumpCycleNum;
+int dryThreshold = 10 ; // cycles before dry period
+//int dryPeriod = 1800000; // Duration of dry period
+
+
 
 /*
 https://www.pjrc.com/teensy/td_libs_OneWire.html
@@ -45,9 +55,11 @@ void setup(){
   pinMode(pumpPin, OUTPUT);
   pinMode(7, OUTPUT);
   pinMode(6, OUTPUT);
+  pinMode(8, OUTPUT);
   pumpState = FALSE;
   t.every(60000,getReadings); //Update rate for the server
   initialWaterLevel = waterAmount;
+  pumpCycleNum = 0;
 }
 
 void loop(){
@@ -180,7 +192,20 @@ void checkWater(){
   if(waterLevel>=upperLimit && !pumpState){
       float waterLevel2 = getWaterLevelAccurate();
       if(waterLevel>=upperLimit){
+       if(pumpCycleNum>= dryThreshold){
+          digitalWrite(dryPeriodLed,HIGH);
+          Serial.print("3,Entering dry period");
+          delay(1000);
+          unsigned long startMillis = millis();
+          while (millis() - startMillis < DRY_PERIOD);
+          digitalWrite(dryPeriodLed,LOW);
+          pumpCycleNum = 0;
+      }
        turnOnPump(TRUE);
+       pumpCycleNum = pumpCycleNum + 1;
+       Serial.print("3,Cyles: ");
+       Serial.print(pumpCycleNum);
+       Serial.print("\n");
       }
 
   }
