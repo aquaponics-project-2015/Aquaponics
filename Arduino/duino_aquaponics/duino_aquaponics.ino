@@ -26,7 +26,7 @@
 #define DRY_PERIOD 900000
 
 Timer t;
-int waterSampleRate = 50;
+int waterSampleRate = 100;
 
 //Try period testing code
 int pumpCycleNum;
@@ -46,7 +46,7 @@ DallasTemperature sensor(&oneWire);
 NewPing sonar1(TRIGGER_PIN_1, ECHO_PIN_1, MAX_DISTANCE);
 int pHArray[ArrayLenth];   //Store the average value of the sensor feedback
 int pHArrayIndex=0;
-float initialWaterLevel = 10;
+float initialWaterLevel;
 bool pumpState;
 
 void setup(){
@@ -70,25 +70,7 @@ void loop(){
 
 
 
-float getWaterLevel(){
-  unsigned int readings[waterSampleRate];
-  int sum = 0;
-        
 
-  for (int i = 0; i < waterSampleRate; ++i){
-    unsigned int uS_1 = sonar1.ping();
-    readings[i] = uS_1 / US_ROUNDTRIP_CM;
-    delay(50);
-  }
-
-  for (int i = 0; i < waterSampleRate; ++i){
-    sum= sum + readings[i];
-
-  }
-
-  float wata = sum/waterSampleRate;
-  return 30 - wata; //Only one sensor  
-}
 
 float getWaterLevelAccurate(){
   float readings[waterSampleRate];
@@ -96,10 +78,14 @@ float getWaterLevelAccurate(){
         
 
   for (int i = 0; i < waterSampleRate; ++i){
-    unsigned int uS_1 = sonar1.ping();
+    unsigned int uS_1 = 0;
+    while(uS_1==0){
+      uS_1 = sonar1.ping();
+      delay(50);
+    }
     readings[i] = (float) uS_1 / US_ROUNDTRIP_CM;
     
-    delay(50);
+     //delay(100);
   }
 
   for (int i = 0; i < waterSampleRate; ++i){
